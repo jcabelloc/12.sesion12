@@ -45,7 +45,6 @@ app.use(flash());
 
 
 app.use((req, res, next) => {
-  console.log(req.session);
   if (!req.session.usuario) {
     return next();
   }
@@ -74,8 +73,6 @@ app.use(errorController.get404);
 mongoose
   .connect(MONGODB_URI)
   .then(result => {
-    console.log(result)
-
     Usuario.findOne().then(usuario => {
         if (!usuario) {
           const usuario = new Usuario({

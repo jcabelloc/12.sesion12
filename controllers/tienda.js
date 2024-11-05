@@ -68,7 +68,6 @@ exports.postCarrito = (req, res) => {
             return req.usuario.agregarAlCarrito(producto);
         })
         .then(result => {
-            console.log(result);
             res.redirect('/carrito');
         })
         .catch(err => console.log(err));

@@ -1,6 +1,7 @@
 const Usuario = require('../models/usuario')
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const {validationResult} = require('express-validator');
 
 
 const nodemailer = require('nodemailer');
@@ -84,6 +85,16 @@ exports.postRegistrarse = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   const passwordConfirmado = req.body.passwordConfirmado;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors.array())
+    return res.status(422).render('auth/registrarse', {
+      path: '/registrarse',
+      titulo: 'registrarse',
+      mensajeError: errors.array()[0].msg
+    });
+  }
   
   if (password !== passwordConfirmado) {
     req.flash('error', 'Debe usar el mismo password')
@@ -110,14 +121,14 @@ exports.postRegistrarse = (req, res, next) => {
         });
     })
     .then(result => {
-      console.log(result);
       res.redirect('/ingresar');
+      /*
       return transporter.sendMail({
         to: email,
         from: 'santaaparicioc@gmail.com', // El email que fue verificado en SendGrid
         subject: 'Bienvenido, tu registro fue exitoso',
         html: '<h1>Se ha dado de alta satisfactoriamente!</h1>'
-      })
+      }) */
     })
     .catch(err => {
       console.log(err);
@@ -188,10 +199,8 @@ exports.postReinicio = (req, res, next) => {
 
 exports.getNuevoPassword = (req, res, next) => {
   const token = req.params.token;
-  console.log(token)
   Usuario.findOne({ tokenReinicio: token, expiracionTokenReinicio: { $gt: Date.now() } })
     .then(usuario => {
-      console.log(usuario)
       let mensaje = req.flash('error');
       if (mensaje.length > 0) {
         mensaje = mensaje[0];

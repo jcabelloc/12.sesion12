@@ -17,7 +17,6 @@ exports.postCrearProducto = (req, res) => {
     const producto = new Producto({nombre: nombre, precio: precio, descripcion: descripcion, urlImagen: urlImagen, idUsuario: req.usuario._id});
     producto.save()
         .then(result => {
-            console.log(result);
             res.redirect('/admin/productos');
         })
         .catch(err => console.log(err));
@@ -61,7 +60,6 @@ exports.postEditarProducto = (req, res, next) => {
             return producto.save();
         })
         .then(result => {
-            console.log('Producto actualizado satisfactoriamente');
             res.redirect('/admin/productos');
         })
         .catch(err => console.log(err));
@@ -87,7 +85,6 @@ exports.postEliminarProducto = (req, res, next) => {
     const idProducto = req.body.idProducto;
     Producto.deleteOne({_id: idProducto, idUsuario: req.usuario._id})
         .then(result => {
-            console.log('Producto eliminado satisfactoriamente');
             res.redirect('/admin/productos');
         })
         .catch(err => console.log(err));
