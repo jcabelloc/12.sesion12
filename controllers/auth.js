@@ -36,18 +36,45 @@ exports.getIngresar = (req, res, next) => {
     path: '/ingresar',
     titulo: 'Ingresar',
     autenticado: false,
-    mensajeError: mensaje
+    mensajeError: mensaje,
+    datosAnteriores: {
+      email: '',
+      password: ''
+    },
+    erroresValidacion: []
   });
 };
 
 exports.postIngresar = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).render('auth/ingresar', {
+      path: '/ingresar',
+      titulo: 'Ingresar',
+      mensajeError: errors.array()[0].msg,
+      datosAnteriores: {
+        email: email,
+        password: password
+      },
+      erroresValidacion: errors.array()
+    });
+  }
   Usuario.findOne({ email: email })
     .then(usuario => {
       if (!usuario) {
-        req.flash('error', 'El usuario no existe')
-        return res.redirect('/ingresar');
+        return res.status(422).render('auth/ingresar', {
+          path: '/ingresar',
+          titulo: 'Ingresar',
+          mensajeError: 'Invalido email o password.',
+          datosAnteriores: {
+            email: email,
+            password: password
+          },
+          erroresValidacion: []
+        });
       }
       bcrypt.compare(password, usuario.password)
         .then(hayCoincidencia => {
@@ -78,6 +105,11 @@ exports.getRegistrarse = (req, res, next) => {
     titulo: 'Registrarse',
     autenticado: false,
     mensajeError: mensaje,
+    datosAnteriores: {
+      email: '',
+      password: '',
+      passwordConfirmado: ''
+    },
     erroresValidacion: []
   });
 };
@@ -94,7 +126,12 @@ exports.postRegistrarse = (req, res, next) => {
       path: '/registrarse',
       titulo: 'registrarse',
       mensajeError: errors.array()[0].msg,
-      erroresValidacion: errors.array()
+      erroresValidacion: errors.array(),
+      datosAnteriores: {
+        email: email,
+        password: password,
+        passwordConfirmado: passwordConfirmado
+      }
     });
   }
   if (!esPasswordComplejo(password)) {

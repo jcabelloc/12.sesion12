@@ -9,7 +9,19 @@ const router = express.Router();
 
 router.get('/ingresar', authController.getIngresar);
 
-router.post('/ingresar', authController.postIngresar);
+router.post('/ingresar',
+    [
+        body('email')
+            .isEmail()
+            .withMessage('Por favor ingrese un email valido'),
+        body(
+            'password',
+            'Por favor ingrese un password que tenga solo letras o números y no menos de 5 caracteres.'
+        )
+            .isLength({ min: 5 })
+            .isAlphanumeric(),
+    ],
+    authController.postIngresar);
 
 router.get('/registrarse', authController.getRegistrarse);
 
@@ -23,7 +35,7 @@ router.post('/registrarse', [
                 throw new Error('Este email no permitido');
             }
             return true; */
-            return Usuario.findOne({email: value}).then(usuarioDoc => {
+            return Usuario.findOne({ email: value }).then(usuarioDoc => {
                 if (usuarioDoc) {
                     return Promise.reject('El email ingresado ya existe');
                 }
