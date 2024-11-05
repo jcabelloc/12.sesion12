@@ -1,5 +1,6 @@
 const express = require('express');
 const { check, body } = require('express-validator');
+const Usuario = require('../models/usuario')
 
 
 const authController = require('../controllers/auth');
@@ -17,10 +18,16 @@ router.post('/registrarse', [
         .isEmail()
         .withMessage('Por favor ingrese un email valido')
         .custom((value, { req }) => {
+            /*
             if (value === 'no-reply@gmail.com') {
                 throw new Error('Este email no permitido');
             }
-            return true;
+            return true; */
+            return Usuario.findOne({email: value}).then(usuarioDoc => {
+                if (usuarioDoc) {
+                    return Promise.reject('El email ingresado ya existe');
+                }
+            });
         }),
     body(
         'password',
