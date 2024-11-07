@@ -15,7 +15,7 @@ exports.getCrearProducto = (req, res) => {
     })
 };
 
-exports.postCrearProducto = (req, res) => {
+exports.postCrearProducto = (req, res, next) => {
     const nombre = req.body.nombre;
     const urlImagen = req.body.urlImagen;
     const precio = req.body.precio;
@@ -51,12 +51,13 @@ exports.postCrearProducto = (req, res) => {
             res.redirect('/admin/productos');
         })
         .catch(err => {
-            console.log(err);
-            res.redirect('/500')
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
         });
 };
 
-exports.getEditarProducto = (req, res) => {
+exports.getEditarProducto = (req, res, next) => {
     const modoEdicion = req.query.editar;
     const idProducto = req.params.idProducto;
     Producto.findById(idProducto)
@@ -75,7 +76,11 @@ exports.getEditarProducto = (req, res) => {
                 erroresValidacion: []
             })
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 }
 
 
@@ -120,12 +125,16 @@ exports.postEditarProducto = (req, res, next) => {
         .then(result => {
             res.redirect('/admin/productos');
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 };
 
 
 
-exports.getProductos = (req, res) => {
+exports.getProductos = (req, res, next) => {
     Producto.find()
         .then(productos => {
             res.render('admin/productos', {
@@ -135,7 +144,11 @@ exports.getProductos = (req, res) => {
                 autenticado: req.session.autenticado
             });
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 };
 
 
@@ -145,5 +158,9 @@ exports.postEliminarProducto = (req, res, next) => {
         .then(result => {
             res.redirect('/admin/productos');
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 }; 
