@@ -1,7 +1,7 @@
 const Producto = require('../models/producto');
 const Pedido = require('../models/pedido');
 
-exports.getProductos = (req, res) => {
+exports.getProductos = (req, res, next) => {
     Producto.find()
         .then(productos => {
             res.render('tienda/lista-productos', {
@@ -12,10 +12,14 @@ exports.getProductos = (req, res) => {
             });
 
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 };
 
-exports.getProducto = (req, res) => {
+exports.getProducto = (req, res, next) => {
     const idProducto = req.params.idProducto;
     Producto.findById(idProducto)
         .then(producto => {
@@ -29,10 +33,14 @@ exports.getProducto = (req, res) => {
                 autenticado: req.session.autenticado
             });
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 }
 
-exports.getIndex = (req, res) => {
+exports.getIndex = (req, res, next) => {
     Producto.find()
         .then(productos => {
             res.render('tienda/index', {
@@ -42,7 +50,11 @@ exports.getIndex = (req, res) => {
                 autenticado: req.session.autenticado
             });
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 }
 
 exports.getCarrito = (req, res, next) => {
@@ -57,10 +69,14 @@ exports.getCarrito = (req, res, next) => {
                 autenticado: req.session.autenticado
             });
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 };
 
-exports.postCarrito = (req, res) => {
+exports.postCarrito = (req, res, next) => {
     const idProducto = req.body.idProducto;
 
     Producto.findById(idProducto)
@@ -70,7 +86,11 @@ exports.postCarrito = (req, res) => {
         .then(result => {
             res.redirect('/carrito');
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 }
 
 exports.postEliminarProductoCarrito = (req, res, next) => {
@@ -79,12 +99,15 @@ exports.postEliminarProductoCarrito = (req, res, next) => {
         .then(result => {
             res.redirect('/carrito');
         })
-        .catch(err => console.log(err));
-
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 };
 
 exports.getPedidos = (req, res, next) => {
-    Pedido.find({'usuario.idUsuario': req.usuario._id})
+    Pedido.find({ 'usuario.idUsuario': req.usuario._id })
         .then(pedidos => {
             res.render('tienda/pedidos', {
                 path: '/pedidos',
@@ -93,8 +116,11 @@ exports.getPedidos = (req, res, next) => {
                 autenticado: req.session.autenticado
             });
         })
-        .catch(err => console.log(err));
-
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 
 };
 
@@ -104,22 +130,26 @@ exports.postPedido = (req, res, next) => {
         .populate('carrito.items.idProducto')
         .then(usuario => {
             const productos = usuario.carrito.items.map(i => {
-              return { cantidad: i.cantidad, producto: { ...i.idProducto._doc } };
+                return { cantidad: i.cantidad, producto: { ...i.idProducto._doc } };
             });
             const pedido = new Pedido({
-              usuario: {
-                nombre: req.usuario.nombre,
-                idUsuario: req.usuario
-              },
-              productos: productos
+                usuario: {
+                    nombre: req.usuario.email,
+                    idUsuario: req.usuario
+                },
+                productos: productos
             });
             return pedido.save();
-          })
-          .then(result => {
+        })
+        .then(result => {
             return req.usuario.limpiarCarrito();
-          })
-          .then(() => {
+        })
+        .then(() => {
             res.redirect('/pedidos');
-          })
-          .catch(err => console.log(err));
+        })
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
 }; 

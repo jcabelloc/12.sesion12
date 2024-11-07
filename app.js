@@ -57,7 +57,7 @@ app.use((req, res, next) => {
       next();
     })
     .catch(err => {
-      throw new Error(err);
+      next(new Error(err));
     });
 
 });
@@ -78,7 +78,12 @@ app.use(errorController.get404);
 
 app.use((err, req, res, next) => {
   console.log(err);
-  res.redirect('/500');
+  // res.redirect('/500');
+  res.status(500).render('500', {
+    titulo: 'Error!',
+    path: '/500',
+    autenticado: req.session.autenticado
+  });
 })
 
 mongoose

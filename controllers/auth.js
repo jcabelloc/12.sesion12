@@ -21,10 +21,6 @@ const transporter = nodemailer.createTransport(
 );
 
 
-let esPasswordComplejo = (password) => {
-  return password.length > 7;
-}
-
 exports.getIngresar = (req, res, next) => {
   let mensaje = req.flash('error');
   if (mensaje.length > 0) {
@@ -50,7 +46,7 @@ exports.postIngresar = (req, res, next) => {
   const password = req.body.password;
 
   const errors = validationResult(req);
-  
+
   if (!errors.isEmpty()) {
     return res.status(422).render('auth/ingresar', {
       path: '/ingresar',
@@ -64,7 +60,7 @@ exports.postIngresar = (req, res, next) => {
     });
   }
 
-  
+
   Usuario.findOne({ email: email })
     .then(usuario => {
       if (!usuario) {
@@ -92,7 +88,11 @@ exports.postIngresar = (req, res, next) => {
           req.flash('error', 'Las credenciales son invalidas')
           res.redirect('/ingresar');
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+        });
     })
 };
 
@@ -150,7 +150,9 @@ exports.postRegistrarse = (req, res, next) => {
       res.redirect('/ingresar');
     })
     .catch(err => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 
 };
