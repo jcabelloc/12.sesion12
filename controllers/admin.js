@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const Producto = require('../models/producto');
 const { validationResult } = require('express-validator');
 
@@ -38,12 +39,21 @@ exports.postCrearProducto = (req, res) => {
             },
         });
     }
-    const producto = new Producto({ nombre: nombre, precio: precio, descripcion: descripcion, urlImagen: urlImagen, idUsuario: req.usuario._id });
+    const producto = new Producto({
+        // _id: new mongoose.Types.ObjectId('672c1d0333c24b7bc6512672'),
+        nombre: nombre, 
+        precio: precio, 
+        descripcion: descripcion, 
+        urlImagen: urlImagen, 
+        idUsuario: req.usuario._id });
     producto.save()
         .then(result => {
             res.redirect('/admin/productos');
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            console.log(err);
+            res.redirect('/500')
+        });
 };
 
 exports.getEditarProducto = (req, res) => {
@@ -77,8 +87,6 @@ exports.postEditarProducto = (req, res, next) => {
     const descripcion = req.body.descripcion;
 
     const errors = validationResult(req);
-    console.log(errors.array())
-    console.log(errors.array()[0].msg)
 
     if (!errors.isEmpty()) {
         return res.status(422).render('admin/editar-producto', {
