@@ -50,6 +50,7 @@ exports.postIngresar = (req, res, next) => {
   const password = req.body.password;
 
   const errors = validationResult(req);
+  
   if (!errors.isEmpty()) {
     return res.status(422).render('auth/ingresar', {
       path: '/ingresar',
@@ -134,11 +135,6 @@ exports.postRegistrarse = (req, res, next) => {
       }
     });
   }
-  if (!esPasswordComplejo(password)) {
-    req.flash('error', 'El password debe tener longitud minima de 8 caracteres, letras y numeros....')
-    res.redirect('/registrarse');
-  }
-
   bcrypt.hash(password, 12)
     .then(passwordCifrado => {
       const usuario = new Usuario({

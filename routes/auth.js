@@ -13,12 +13,14 @@ router.post('/ingresar',
     [
         body('email')
             .isEmail()
-            .withMessage('Por favor ingrese un email valido'),
+            .withMessage('Por favor ingrese un email valido')
+            .normalizeEmail(),
         body(
             'password',
             'Por favor ingrese un password que tenga solo letras o números y no menos de 5 caracteres.'
         )
             .isLength({ min: 5 })
+            .trim()
             .isAlphanumeric(),
     ],
     authController.postIngresar);
@@ -29,6 +31,7 @@ router.post('/registrarse', [
     check('email')
         .isEmail()
         .withMessage('Por favor ingrese un email valido')
+        .normalizeEmail()
         .custom((value, { req }) => {
             /*
             if (value === 'no-reply@gmail.com') {
@@ -46,7 +49,8 @@ router.post('/registrarse', [
         'Por favor ingrese un password que tenga solo letras o números y no menos de 5 caracteres.'
     )
         .isLength({ min: 5 })
-        .isAlphanumeric(),
+        .isAlphanumeric()
+        .trim(),
     body('passwordConfirmado').custom((value, { req }) => {
         if (value !== req.body.password) {
             throw new Error('Passwords no coinciden!');
