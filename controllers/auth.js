@@ -63,6 +63,8 @@ exports.postIngresar = (req, res, next) => {
       erroresValidacion: errors.array()
     });
   }
+
+  
   Usuario.findOne({ email: email })
     .then(usuario => {
       if (!usuario) {

@@ -1,11 +1,16 @@
 const Producto = require('../models/producto');
+const { validationResult } = require('express-validator');
+
 
 exports.getCrearProducto = (req, res) => {
     res.render('admin/editar-producto', {
         titulo: 'Crear Producto',
         path: '/admin/crear-producto',
         modoEdicion: false,
-        autenticado: req.session.autenticado
+        autenticado: req.session.autenticado,
+        mensajeError: null,
+        tieneError: false,
+        erroresValidacion: []
     })
 };
 
@@ -14,7 +19,26 @@ exports.postCrearProducto = (req, res) => {
     const urlImagen = req.body.urlImagen;
     const precio = req.body.precio;
     const descripcion = req.body.descripcion;
-    const producto = new Producto({nombre: nombre, precio: precio, descripcion: descripcion, urlImagen: urlImagen, idUsuario: req.usuario._id});
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(422).render('admin/editar-producto', {
+            path: '/admin/editar-producto',
+            titulo: 'Crear Producto',
+            modoEdicion: false,
+            tieneError: true,
+            mensajeError: errors.array()[0].msg,
+            erroresValidacion: errors.array(),
+            producto: {
+                nombre: nombre,
+                urlImagen: urlImagen,
+                precio: precio,
+                descripcion: descripcion
+            },
+        });
+    }
+    const producto = new Producto({ nombre: nombre, precio: precio, descripcion: descripcion, urlImagen: urlImagen, idUsuario: req.usuario._id });
     producto.save()
         .then(result => {
             res.redirect('/admin/productos');
@@ -35,11 +59,14 @@ exports.getEditarProducto = (req, res) => {
                 path: '/admin/editar-producto',
                 producto: producto,
                 modoEdicion: true,
-                autenticado: req.session.autenticado
+                autenticado: req.session.autenticado,
+                mensajeError: null,
+                tieneError: false,
+                erroresValidacion: []
             })
         })
         .catch(err => console.log(err));
-} 
+}
 
 
 exports.postEditarProducto = (req, res, next) => {
@@ -48,6 +75,29 @@ exports.postEditarProducto = (req, res, next) => {
     const precio = req.body.precio;
     const urlImagen = req.body.urlImagen;
     const descripcion = req.body.descripcion;
+
+    const errors = validationResult(req);
+    console.log(errors.array())
+    console.log(errors.array()[0].msg)
+
+    if (!errors.isEmpty()) {
+        return res.status(422).render('admin/editar-producto', {
+            path: '/admin/editar-producto',
+            titulo: 'Editar Producto',
+            modoEdicion: true,
+            tieneError: true,
+            mensajeError: errors.array()[0].msg,
+            erroresValidacion: errors.array(),
+            producto: {
+                nombre: nombre,
+                urlImagen: urlImagen,
+                precio: precio,
+                descripcion: descripcion,
+                _id: idProducto
+            },
+        });
+    }
+
     Producto.findById(idProducto)
         .then(producto => {
             if (producto.idUsuario.toString() !== req.usuario._id.toString()) {
@@ -63,7 +113,7 @@ exports.postEditarProducto = (req, res, next) => {
             res.redirect('/admin/productos');
         })
         .catch(err => console.log(err));
-}; 
+};
 
 
 
@@ -83,7 +133,7 @@ exports.getProductos = (req, res) => {
 
 exports.postEliminarProducto = (req, res, next) => {
     const idProducto = req.body.idProducto;
-    Producto.deleteOne({_id: idProducto, idUsuario: req.usuario._id})
+    Producto.deleteOne({ _id: idProducto, idUsuario: req.usuario._id })
         .then(result => {
             res.redirect('/admin/productos');
         })
